@@ -16,6 +16,10 @@ This project analyzes student marks and attendance using Python, NumPy, and Pand
 | --- | --- |
 | `main.py` | Loads the dataset, processes it, and displays the analysis |
 | `functions.py` | Reusable calculation and analysis functions |
+| `app.py` | Flask web application |
+| `templates/index.html` | Dashboard page |
+| `static/` | Dashboard styling and student-table filters |
+| `render.yaml` | Render deployment configuration |
 | `students.csv` | Sample student dataset |
 | `requirements.txt` | Python dependencies |
 | `Project_Documentation.md` | Project objectives, implementation, and outcome |
@@ -34,13 +38,14 @@ Open PowerShell in the project folder and run:
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
-python main.py
+python app.py
 ```
 
-If PowerShell blocks virtual environment activation, install and run without activating it:
+Then open **http://127.0.0.1:5000** in your browser. The dashboard reads the included CSV and calculates its results when the page loads.
+
+To run the original command-line report instead:
 
 ```powershell
-python -m pip install -r requirements.txt
 python main.py
 ```
 
@@ -50,8 +55,10 @@ python main.py
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements.txt
-python main.py
+python app.py
 ```
+
+Open **http://127.0.0.1:5000** in your browser. To run the command-line report instead, use `python main.py`.
 
 ## Grading Rules
 
@@ -65,22 +72,38 @@ python main.py
 
 ## Publish to GitHub
 
-1. Create a new, empty repository on GitHub. Do not initialize it with a README or other files.
-2. In PowerShell, from this project folder, connect the local repository and push:
+Push your latest local changes to the existing GitHub repository:
 
 ```powershell
-git remote add origin https://github.com/YOUR-USERNAME/YOUR-REPOSITORY.git
 git add .
-git commit -m "Add student performance analytics project"
-git push -u origin main
+git commit -m "Prepare dashboard for public deployment"
+git push
 ```
 
-Replace `YOUR-USERNAME` and `YOUR-REPOSITORY` with your GitHub details. GitHub may ask you to authenticate when you push.
+## Deploy the Website Publicly
+
+This project includes a Render Blueprint configuration in `render.yaml`.
+
+1. Sign in to [Render](https://render.com/) and choose **New + → Blueprint**.
+2. Connect your GitHub account if asked, and select `Student-Performance-Analytics-System`.
+3. Review the service named `student-performance-analytics`, then click **Apply**.
+4. Wait for the deploy to finish. Render will show the public `onrender.com` URL for your website.
+
+The Blueprint runs the app using Gunicorn, checks that `/` is healthy, and uses Render's free web-service plan. Free services may sleep when inactive and take a short time to wake on the next visit.
+
+To update the public site after making changes, push to GitHub:
+
+```powershell
+git add .
+git commit -m "Update student analytics dashboard"
+git push
+```
 
 ## Technologies
 
 - Python
 - Pandas
 - NumPy
+- Flask
 
 This is a data-analysis project; it does not require advanced machine learning.

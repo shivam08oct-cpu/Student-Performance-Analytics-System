@@ -66,3 +66,8 @@ This project is useful for teachers and academic coordinators because it convert
 
 ## Conclusion
 The project demonstrates practical usage of Python data analysis with NumPy and Pandas while following the assignment requirements.
+
+## Web Dashboard
+The project also includes a local Flask dashboard. Run `python app.py`, then open `http://127.0.0.1:5000` in a browser. It displays class metrics, subject averages, grade distribution, and searchable/filterable student results using the same CSV dataset and calculation functions as the command-line program.
+
+The app includes a Render Blueprint (`render.yaml`) for public deployment. Push the project to GitHub, create a Blueprint service on Render from the repository, and follow the deployment instructions in `README.md`.

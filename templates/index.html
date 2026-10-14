@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A student performance analytics dashboard for marks, attendance, grades, and class insights.">
+  <title>Student Performance | Analytics Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="/" aria-label="StudentIQ home">
+        <span class="brand-mark">S<span>.</span></span>
+        <span class="brand-name">student<span>IQ</span></span>
+      </a>
+      <div class="side-label">WORKSPACE</div>
+      <a class="nav-link active" href="#overview"><span class="nav-icon">▦</span> Overview</a>
+      <a class="nav-link" href="#students"><span class="nav-icon">♙</span> Students</a>
+      <a class="nav-link" href="#subjects"><span class="nav-icon">▤</span> Subjects</a>
+
+      <div class="sidebar-bottom">
+        <div class="sidebar-tip">
+          <div class="tip-icon">✦</div>
+          <strong>Class insight</strong>
+          <p>{{ best_subject }} is the strongest subject this term, with an average of {{ "%.1f"|format(subject_averages[best_subject]) }}.</p>
+        </div>
+        <div class="profile">
+          <div class="avatar">PA</div>
+          <div><strong>Performance</strong><span>Analytics workspace</span></div>
+          <span class="profile-dots">···</span>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content" id="overview">
+      <header class="topbar">
+        <div class="breadcrumb">Workspace <span>/</span> <strong>Overview</strong></div>
+        <div class="topbar-right">
+          <span class="data-status"><span></span> Live dataset</span>
+          <div class="top-avatar">PA</div>
+        </div>
+      </header>
+
+      <section class="page-heading">
+        <div>
+          <div class="eyebrow">ACADEMIC YEAR 2026–27 <span class="term-pill">TERM 01</span></div>
+          <h1>Student performance</h1>
+          <p class="subtitle">A clear view of your students' progress and class-wide results.</p>
+        </div>
+        <div class="heading-actions">
+          <span class="updated-label">Dataset · {{ data_file }}</span>
+          <button class="button button-primary" type="button" onclick="window.print()"><span>↧</span> Export report</button>
+        </div>
+      </section>
+
+      <section class="metrics-grid" aria-label="Class summary">
+        <article class="metric-card">
+          <div class="metric-top"><span>Total students</span><span class="metric-icon violet">♙</span></div>
+          <div class="metric-value">{{ summary.total_students }}<span class="metric-unit">students</span></div>
+          <div class="metric-foot"><span class="foot-dot violet-dot"></span> Enrolled in this dataset</div>
+        </article>
+        <article class="metric-card">
+          <div class="metric-top"><span>Class average</span><span class="metric-icon blue">⌁</span></div>
+          <div class="metric-value">{{ "%.1f"|format(summary.overall_average) }}<span class="metric-unit">/ 100</span></div>
+          <div class="metric-foot"><span class="foot-dot green-dot"></span> Across all subjects</div>
+        </article>
+        <article class="metric-card">
+          <div class="metric-top"><span>Pass rate</span><span class="metric-icon green">✓</span></div>
+          <div class="metric-value">{{ "%.0f"|format(summary.pass_rate) }}<span class="metric-unit">%</span></div>
+          <div class="metric-foot"><span class="foot-dot green-dot"></span> {{ summary.pass_count }} students passing</div>
+        </article>
+        <article class="metric-card">
+          <div class="metric-top"><span>Top average</span><span class="metric-icon amber">✦</span></div>
+          <div class="metric-value">{{ "%.1f"|format(summary.highest_average) }}<span class="metric-unit">/ 100</span></div>
+          <div class="metric-foot"><span class="foot-dot amber-dot"></span> Highest student average</div>
+        </article>
+      </section>
+
+      <section class="insights-grid">
+        <article class="panel subject-panel" id="subjects">
+          <div class="panel-heading">
+            <div><h2>Subject performance</h2><p>Average marks by subject</p></div>
+            <span class="period-label">OUT OF 100</span>
+          </div>
+          <div class="subject-chart">
+            {% for subject, average in subject_averages.items() %}
+            <div class="subject-row">
+              <div class="subject-label"><span>{{ subject }}</span><strong>{{ "%.1f"|format(average) }}</strong></div>
+              <div class="bar-track"><div class="bar-fill {% if subject == best_subject %}bar-highlight{% endif %}" style="width: {{ [average, 100]|min }}%"></div></div>
+            </div>
+            {% endfor %}
+          </div>
+          <div class="best-subject-note"><span class="sparkle">✦</span> <span><strong>{{ best_subject }}</strong> is the highest-performing subject</span></div>
+        </article>
+
+        <article class="panel grade-panel">
+          <div class="panel-heading">
+            <div><h2>Grade distribution</h2><p>Students by final grade</p></div>
+            <span class="period-label">THIS TERM</span>
+          </div>
+          <div class="grade-list">
+            {% for item in grade_distribution %}
+            <div class="grade-row">
+              <span class="grade-badge grade-{{ item.grade|lower }}">{{ item.grade }}</span>
+              <div class="grade-track"><div class="grade-fill grade-fill-{{ item.grade|lower }}" style="width: {{ (item.count / summary.total_students * 100) if summary.total_students else 0 }}%"></div></div>
+              <strong>{{ item.count }}</strong>
+            </div>
+            {% endfor %}
+          </div>
+          <div class="grade-foot"><span>{{ summary.pass_count }} passed</span><span>{{ summary.fail_count }} need support</span></div>
+        </article>
+      </section>
+
+      <section class="panel students-panel" id="students">
+        <div class="panel-heading students-heading">
+          <div><h2>Student results</h2><p>Browse and filter individual student performance</p></div>
+          <span class="result-count" id="result-count">{{ students|length }} students</span>
+        </div>
+        <div class="table-controls">
+          <label class="search-box"><span>⌕</span><input type="search" id="student-search" placeholder="Search students..." aria-label="Search students"></label>
+          <label class="select-wrap"><span class="sr-only">Filter by department</span>
+            <select id="department-filter">
+              <option value="">All departments</option>
+              {% for department in departments %}<option value="{{ department }}">{{ department }}</option>{% endfor %}
+            </select>
+          </label>
+          <label class="select-wrap"><span class="sr-only">Filter by result</span>
+            <select id="status-filter">
+              <option value="">All results</option>
+              <option value="Pass">Passed</option>
+              <option value="Fail">Needs support</option>
+            </select>
+          </label>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>STUDENT</th><th>DEPARTMENT</th><th>AVERAGE</th><th>ATTENDANCE</th><th>GRADE</th><th>STATUS</th></tr></thead>
+            <tbody id="student-rows">
+              {% for student in students %}
+              <tr data-name="{{ student['Name']|lower }}" data-id="{{ student['Student ID']|lower }}" data-department="{{ student['Department'] }}" data-status="{{ student['Pass/Fail'] }}">
+                <td><div class="student-cell"><span class="student-avatar avatar-{{ loop.index0 % 6 }}">{{ student['Name'].split()|map('first')|join|upper }}</span><span><strong>{{ student['Name'] }}</strong><small>{{ student['Student ID'] }}</small></span></div></td>
+                <td class="department-cell">{{ student['Department'] }}</td>
+                <td><strong class="average-value">{{ "%.1f"|format(student['Average Marks']) }}</strong><span class="out-of"> / 100</span></td>
+                <td><div class="attendance-cell"><div class="attendance-track"><span style="width: {{ student['Attendance'] }}%"></span></div><span>{{ student['Attendance']|int }}%</span></div></td>
+                <td><span class="grade-badge grade-{{ student['Grade']|lower }}">{{ student['Grade'] }}</span></td>
+                <td><span class="status-badge status-{{ student['Pass/Fail']|lower }}"><i></i>{{ "Passed" if student['Pass/Fail'] == "Pass" else "Needs support" }}</span></td>
+              </tr>
+              {% endfor %}
+              <tr class="empty-row" id="empty-row" hidden><td colspan="6">No students match your search.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="table-footer"><span>Showing student results from <strong>{{ data_file }}</strong></span><span>Grading: A ≥ 85 · B ≥ 70 · C ≥ 55 · D ≥ 40</span></div>
+      </section>
+
+      <footer class="page-footer">StudentIQ <span>·</span> Student Performance Analytics System</footer>
+    </main>
+  </div>
+  <script src="{{ url_for('static', filename='dashboard.js') }}"></script>
+</body>
+</html>
